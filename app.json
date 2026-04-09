@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "StockExchangeRN",
+    "slug": "stock-exchange-rn",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.webp",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.webp",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.stockexchangern.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.webp",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.stockexchangern.app"
+    }
+  }
+}
