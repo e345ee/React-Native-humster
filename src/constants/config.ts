@@ -1,4 +1,4 @@
-const envBaseUrl = process.env.EXPO_PUBLIC_API_URL as string | undefined;
+const envBaseUrl = typeof process !== 'undefined' ? (process.env.EXPO_PUBLIC_API_URL as string | undefined) : undefined;
 
 function normalizeBaseUrl(url: string) {
   return url.endsWith('/') ? url : `${url}/`;

@@ -2,9 +2,11 @@ import { AxiosError } from 'axios';
 import { api } from './client';
 import {
   BuyRequest,
+  PortfolioBalanceResponse,
   PortfolioStatisticsResponse,
   SellRequest,
   StockHoldingResponse,
+  TopUpBalanceRequest,
   TransactionResponse,
 } from '../types/api';
 
@@ -28,7 +30,7 @@ export async function getStockHolding(symbol: string) {
 export async function buyStock(payload: BuyRequest) {
   const { data } = await api.post<TransactionResponse>('portfolio/stocks/buy', {
     ...payload,
-    currency: payload.currency ?? 'USD',
+    currency: payload.currency ?? 'RUB',
   });
   return data;
 }
@@ -36,7 +38,16 @@ export async function buyStock(payload: BuyRequest) {
 export async function sellStock(payload: SellRequest) {
   const { data } = await api.post<TransactionResponse>('portfolio/stocks/sell', {
     ...payload,
-    currency: payload.currency ?? 'USD',
+    currency: payload.currency ?? 'RUB',
+  });
+  return data;
+}
+
+
+export async function topUpBalance(payload: TopUpBalanceRequest) {
+  const { data } = await api.post<PortfolioBalanceResponse>('portfolio/balance/top-up', {
+    amount: payload.amount,
+    currency: payload.currency ?? 'RUB',
   });
   return data;
 }

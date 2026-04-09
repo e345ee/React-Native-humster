@@ -13,14 +13,32 @@ function trimFraction(value: string): string {
   return value.replace(/\.0+$/, '').replace(/(\.\d*[1-9])0+$/, '$1');
 }
 
+export const getCurrencySymbol = (currency?: string | null) => {
+  const normalized = String(currency ?? '').trim().toUpperCase();
+  switch (normalized) {
+    case 'RUB':
+    case 'RUR':
+    case '₽':
+      return '₽';
+    case 'USD':
+    case '$':
+      return '$';
+    case 'EUR':
+    case '€':
+      return '€';
+    default:
+      return currency && currency.trim().length > 0 ? currency : '₽';
+  }
+};
+
 export const formatMoney = (value: string | number, currency = '₽') => {
   const amount = toNumber(value);
-  return `${amount.toFixed(2)} ${currency}`;
+  return `${amount.toFixed(2)} ${getCurrencySymbol(currency)}`;
 };
 
 export const formatSignedMoney = (value: string | number, currency = '₽') => {
   const amount = toNumber(value);
-  return amount >= 0 ? `+${amount.toFixed(2)} ${currency}` : `${amount.toFixed(2)} ${currency}`;
+  return amount >= 0 ? `+${amount.toFixed(2)} ${getCurrencySymbol(currency)}` : `${amount.toFixed(2)} ${getCurrencySymbol(currency)}`;
 };
 
 export const formatCompactMoney = (value: string | number, currency = '₽') => {
@@ -30,7 +48,7 @@ export const formatCompactMoney = (value: string | number, currency = '₽') => 
   const [integerPart, fractionPart] = normalized.split('.');
   const formattedInteger = addThousandsSeparator(integerPart);
   const formatted = fractionPart ? `${formattedInteger}.${fractionPart}` : formattedInteger;
-  return `${sign}${formatted} ${currency}`;
+  return `${sign}${formatted} ${getCurrencySymbol(currency)}`;
 };
 
 export const formatSignedCompactMoney = (value: string | number, currency = '₽') => {
@@ -40,12 +58,12 @@ export const formatSignedCompactMoney = (value: string | number, currency = '₽
   const [integerPart, fractionPart] = normalized.split('.');
   const formattedInteger = addThousandsSeparator(integerPart);
   const formatted = fractionPart ? `${formattedInteger}.${fractionPart}` : formattedInteger;
-  return `${sign}${formatted} ${currency}`;
+  return `${sign}${formatted} ${getCurrencySymbol(currency)}`;
 };
 
 export const formatApiMoney = (value: string | number | null | undefined, currency = '₽') => {
   const raw = value == null || value === '' ? '0' : String(value);
-  return `${raw} ${currency}`;
+  return `${raw} ${getCurrencySymbol(currency)}`;
 };
 
 export const formatQuantity = (value: string | number) => {

@@ -1,10 +1,15 @@
 import React, { PropsWithChildren } from 'react';
-import { StyleSheet, View, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { usePalette } from '../theme/usePalette';
 
-export default function Card({ children, style }: PropsWithChildren<{ style?: ViewStyle }>) {
+export default function Card({ children, style }: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
   const palette = usePalette();
-  return <View style={[styles.card, { backgroundColor: palette.card, borderColor: palette.border }, style]}>{children}</View>;
+
+  return (
+    <View style={[styles.card, { backgroundColor: palette.card, borderColor: palette.border }, style]}>
+      {children}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

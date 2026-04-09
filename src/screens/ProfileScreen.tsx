@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
-import { RouteProp, useRoute } from '@react-navigation/native';
+import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/native';
 import Screen from '../components/Screen';
 import Card from '../components/Card';
-import { getPortfolioStatistics } from '../api/portfolio';
+import { getPortfolioStatistics, topUpBalance } from '../api/portfolio';
 import { PortfolioStatisticsResponse } from '../types/api';
-import { formatApiMoney, formatCurrentDate } from '../utils/format';
+import { formatApiMoney, formatCurrentDate, getCurrencySymbol } from '../utils/format';
+import { APP_CURRENCY } from '../constants/currency';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { usePalette } from '../theme/usePalette';
@@ -14,17 +15,21 @@ import { showToast } from '../utils/toast';
 import { MainTabParamList } from '../navigation/types';
 
 type ProfileRoute = RouteProp<MainTabParamList, 'Профиль'>;
+const TOP_UP_AMOUNT_RUB = '1000.00';
 
 export default function ProfileScreen() {
   const route = useRoute<ProfileRoute>();
   const [stats, setStats] = useState<PortfolioStatisticsResponse | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [topUpLoading, setTopUpLoading] = useState(false);
   const loginFromStore = useAuthStore((state) => state.login);
   const login = route.params?.username ?? loginFromStore ?? 'Пользователь';
   const logout = useAuthStore((state) => state.logout);
   const isDark = useThemeStore((state) => state.isDark);
   const setDark = useThemeStore((state) => state.setDark);
   const palette = usePalette();
+  const currency = APP_CURRENCY;
+  const currencySymbol = getCurrencySymbol(currency);
 
   const load = useCallback(async () => {
     try {
@@ -42,10 +47,30 @@ export default function ProfileScreen() {
     load();
   }, [load]);
 
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+
   const handleLogout = useCallback(async () => {
     showToast('Вы вышли из системы');
     await logout();
   }, [logout]);
+
+  const handleTopUp = useCallback(async () => {
+    try {
+      setTopUpLoading(true);
+      const response = await topUpBalance({ amount: TOP_UP_AMOUNT_RUB, currency: 'RUB' });
+      setStats((prev) => prev ? { ...prev, cashBalance: response.cashBalance, currency: APP_CURRENCY } : prev);
+      showToast(`Счёт пополнен на 1000 ${getCurrencySymbol(APP_CURRENCY)}`);
+      await load();
+    } catch (error) {
+      showToast(getProfileErrorMessage(error), 'long');
+    } finally {
+      setTopUpLoading(false);
+    }
+  }, [load]);
 
   return (
     <Screen refreshing={refreshing} onRefresh={load}>
@@ -62,11 +87,20 @@ export default function ProfileScreen() {
 
       <Card>
         <Text style={[styles.cardTitle, { color: palette.text }]}>Финансовая информация</Text>
-        <Row label="Баланс:" value={formatApiMoney(stats?.cashBalance)} valueColor={palette.success} />
+        <Row label="Баланс:" value={formatApiMoney(stats?.cashBalance, currency)} valueColor={palette.success} />
+        <Divider />
+        <Row label="Валюта счёта:" value={currencySymbol} />
         <Divider />
         <Row label="Всего сделок:" value={String(stats?.totalTransactions ?? 0)} />
         <Divider />
         <Row label="Дата регистрации:" value={formatCurrentDate()} />
+        <Pressable
+          style={[styles.topUpButton, { backgroundColor: palette.primary }, topUpLoading && styles.buttonDisabled]}
+          disabled={topUpLoading}
+          onPress={handleTopUp}
+        >
+          <Text style={styles.topUpButtonText}>{topUpLoading ? 'Пополнение...' : 'Пополнить счёт (+1000 ₽)'}</Text>
+        </Pressable>
       </Card>
 
       <Card>
@@ -127,5 +161,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderWidth: 1,
   },
+  topUpButton: { marginTop: 18, borderRadius: 12, alignItems: 'center', paddingVertical: 14 },
+  topUpButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  buttonDisabled: { opacity: 0.7 },
   logoutText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

@@ -4,6 +4,7 @@ import Card from './Card';
 import { StockQuote } from '../types/api';
 import { usePalette } from '../theme/usePalette';
 import { formatMoney } from '../utils/format';
+import { APP_CURRENCY } from '../constants/currency';
 
 export default function StockRow({ stock, onPress }: { stock: StockQuote; onPress: () => void }) {
   const palette = usePalette();
@@ -17,7 +18,7 @@ export default function StockRow({ stock, onPress }: { stock: StockQuote; onPres
             <Text style={[styles.name, { color: palette.secondaryText }]} numberOfLines={1}>{stock.name}</Text>
           </View>
           <View style={styles.right}>
-            <Text style={[styles.price, { color: palette.text }]}>{formatMoney(stock.price)}</Text>
+            <Text style={[styles.price, { color: palette.text }]}>{formatMoney(stock.price, APP_CURRENCY)}</Text>
           </View>
         </View>
       </Card>

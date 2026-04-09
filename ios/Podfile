@@ -1,5 +1,0 @@
-platform :ios, '14.0'
-
-target 'StockExchangeRN' do
-  use_frameworks! :linkage => :static
-end

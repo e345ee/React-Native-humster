@@ -40,6 +40,18 @@ export type StockHoldingResponse = {
   lots: Lot[];
 };
 
+
+export type TopUpBalanceRequest = {
+  amount: string;
+  currency?: string;
+};
+
+export type PortfolioBalanceResponse = {
+  portfolioId: string;
+  cashBalance: string;
+  currency: string;
+};
+
 export type BuyRequest = {
   symbol: string;
   quantity: string;
@@ -76,6 +88,7 @@ export type StockQuote = {
   symbol: string;
   name: string;
   price: number;
+  currency?: string;
   changeAbs: number;
   changePct: number;
   collectedAt?: string;

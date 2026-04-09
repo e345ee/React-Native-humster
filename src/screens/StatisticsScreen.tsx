@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import Screen from '../components/Screen';
 import Card from '../components/Card';
 import StatRow from '../components/StatRow';
@@ -9,6 +10,7 @@ import { formatCompactMoney, formatSignedCompactMoney, toNumber } from '../utils
 import { usePalette } from '../theme/usePalette';
 import { getStatisticsErrorMessage } from '../utils/apiError';
 import { showToast } from '../utils/toast';
+import { APP_CURRENCY } from '../constants/currency';
 
 function Divider() {
   const palette = usePalette();
@@ -19,6 +21,7 @@ export default function StatisticsScreen() {
   const [stats, setStats] = useState<PortfolioStatisticsResponse | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const palette = usePalette();
+  const currency = APP_CURRENCY;
 
   const load = useCallback(async () => {
     try {
@@ -34,6 +37,12 @@ export default function StatisticsScreen() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
 
   const cashBalance = toNumber(stats?.cashBalance);
   const grossBuyVolume = toNumber(stats?.grossBuyVolume);
@@ -56,20 +65,20 @@ export default function StatisticsScreen() {
         <Divider />
         <StatRow
           label="Чистый денежный поток:"
-          value={formatSignedCompactMoney(netCashFlow)}
+          value={formatSignedCompactMoney(netCashFlow, currency)}
           valueColor={netCashFlow >= 0 ? palette.success : palette.danger}
         />
       </Card>
 
       <Card style={styles.card}>
         <Text style={[styles.cardTitle, { color: palette.text }]}>Финансовые показатели</Text>
-        <StatRow label="Денежный баланс:" value={formatCompactMoney(cashBalance)} />
+        <StatRow label="Денежный баланс:" value={formatCompactMoney(cashBalance, currency)} />
         <Divider />
-        <StatRow label="Вложено в акции:" value={formatCompactMoney(grossBuyVolume)} />
+        <StatRow label="Вложено в акции:" value={formatCompactMoney(grossBuyVolume, currency)} />
         <Divider />
-        <StatRow label="Получено от продаж:" value={formatCompactMoney(grossSellVolume)} valueColor={grossSellColor} />
+        <StatRow label="Получено от продаж:" value={formatCompactMoney(grossSellVolume, currency)} valueColor={grossSellColor} />
         <Divider />
-        <StatRow label="Общая стоимость портфеля:" value={formatCompactMoney(portfolioValue)} />
+        <StatRow label="Общая стоимость портфеля:" value={formatCompactMoney(portfolioValue, currency)} />
       </Card>
     </Screen>
   );

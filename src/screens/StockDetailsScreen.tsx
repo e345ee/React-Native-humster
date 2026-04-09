@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { AxiosError } from 'axios';
@@ -18,6 +18,7 @@ import { BackIcon } from '../components/Icons';
 import { getTradeErrorMessage } from '../utils/apiError';
 import { getStockName } from '../constants/stocks';
 import { showToast } from '../utils/toast';
+import { APP_CURRENCY } from '../constants/currency';
 
 type DetailsRoute = RouteProp<RootStackParamList, 'StockDetails'>;
 type ChartType = 'LINE' | 'CANDLE';
@@ -56,6 +57,7 @@ export default function StockDetailsScreen() {
   const [quoteLoaded, setQuoteLoaded] = useState(false);
   const [chartSeed] = useState(() => Date.now());
   const [cachedChartData, setCachedChartData] = useState<ChartCache>({});
+  const autoRefreshTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const ensureChartsCached = useCallback((basePrice: number) => {
     if (!basePrice || Object.keys(cachedChartData).length > 0) return;
@@ -94,6 +96,7 @@ export default function StockDetailsScreen() {
           changeAbs: initialStock.changeAbs,
           changePct: initialStock.changePct,
           collectedAt: quote.collectedAt,
+          currency: APP_CURRENCY,
           source: quote.source,
         });
         setBasePriceForChart((prev) => {
@@ -129,6 +132,16 @@ export default function StockDetailsScreen() {
 
   useEffect(() => {
     loadQuoteAndHoldings();
+
+    autoRefreshTimer.current = setInterval(() => {
+      loadQuoteAndHoldings();
+    }, 5000);
+
+    return () => {
+      if (autoRefreshTimer.current) {
+        clearInterval(autoRefreshTimer.current);
+      }
+    };
   }, [loadQuoteAndHoldings]);
 
   useEffect(() => {
@@ -161,7 +174,7 @@ export default function StockDetailsScreen() {
         symbol: stock.symbol,
         quantity: '1',
         pricePerShare: String(currentPrice),
-        currency: 'USD',
+        currency: APP_CURRENCY,
       });
       showToast('Покупка успешно выполнена');
       await updateHoldingsOnly();
@@ -194,7 +207,7 @@ export default function StockDetailsScreen() {
         symbol: stock.symbol,
         quantity: '1',
         pricePerShare: String(currentPrice),
-        currency: 'USD',
+        currency: APP_CURRENCY,
       });
       showToast('Продажа успешно выполнена');
       await updateHoldingsOnly();
@@ -258,12 +271,13 @@ export default function StockDetailsScreen() {
         <Card style={styles.portfolioCard}>
           <Text style={[styles.sectionTitle, { color: palette.text }]}>Ваш портфель</Text>
           <Text style={[styles.quantity, { color: palette.text }]}>{formatQuantity(quantity)}</Text>
-          <StatRow label="Текущая цена:" value={formatMoney(currentPrice)} />
-          <StatRow label="Средняя цена:" value={averagePrice > 0 ? formatMoney(averagePrice) : '— ₽'} />
-          <StatRow label="Общая стоимость:" value={formatMoney(totalValue)} />
+          <Text style={[styles.quoteMeta, { color: palette.secondaryText }]}>Обновление цены каждые 5 секунд</Text>
+          <StatRow label="Текущая цена:" value={formatMoney(currentPrice, APP_CURRENCY)} />
+          <StatRow label="Средняя цена:" value={averagePrice > 0 ? formatMoney(averagePrice, APP_CURRENCY) : '—'} />
+          <StatRow label="Общая стоимость:" value={formatMoney(totalValue, APP_CURRENCY)} />
           <StatRow
             label="Доход:"
-            value={profit >= 0 ? formatSignedMoney(profit) : formatMoney(profit)}
+            value={profit >= 0 ? formatSignedMoney(profit, APP_CURRENCY) : formatMoney(profit, APP_CURRENCY)}
             valueColor={profit >= 0 ? palette.success : palette.danger}
           />
         </Card>

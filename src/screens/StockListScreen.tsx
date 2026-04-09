@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, ListRenderItemInfo, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -16,6 +16,7 @@ export default function StockListScreen() {
   const [stocks, setStocks] = useState<StockQuote[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const palette = usePalette();
+  const autoRefreshTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -32,12 +33,23 @@ export default function StockListScreen() {
 
   useEffect(() => {
     load();
+
+    autoRefreshTimer.current = setInterval(() => {
+      load();
+    }, 5000);
+
+    return () => {
+      if (autoRefreshTimer.current) {
+        clearInterval(autoRefreshTimer.current);
+      }
+    };
   }, [load]);
 
   return (
     <Screen scroll={false}>
       <View style={styles.headerWrap}>
         <Text style={[styles.title, { color: palette.text }]}>Список акций</Text>
+        <Text style={[styles.subtitle, { color: palette.secondaryText }]}>Котировки обновляются каждые 5 секунд</Text>
       </View>
       <FlatList<StockQuote>
         data={stocks}
@@ -56,4 +68,5 @@ export default function StockListScreen() {
 const styles = StyleSheet.create({
   headerWrap: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
   title: { fontSize: 24, fontWeight: '700' },
+  subtitle: { fontSize: 13, marginTop: 4 },
 });
