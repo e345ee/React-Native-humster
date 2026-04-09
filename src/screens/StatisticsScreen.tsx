@@ -10,7 +10,6 @@ import { formatCompactMoney, formatSignedCompactMoney, toNumber } from '../utils
 import { usePalette } from '../theme/usePalette';
 import { getStatisticsErrorMessage } from '../utils/apiError';
 import { showToast } from '../utils/toast';
-import { APP_CURRENCY } from '../constants/currency';
 
 function Divider() {
   const palette = usePalette();
@@ -21,7 +20,7 @@ export default function StatisticsScreen() {
   const [stats, setStats] = useState<PortfolioStatisticsResponse | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const palette = usePalette();
-  const currency = APP_CURRENCY;
+  const currency = stats?.currency ?? 'USD';
 
   const load = useCallback(async () => {
     try {

@@ -6,7 +6,6 @@ import Card from '../components/Card';
 import { getPortfolioStatistics, topUpBalance } from '../api/portfolio';
 import { PortfolioStatisticsResponse } from '../types/api';
 import { formatApiMoney, formatCurrentDate, getCurrencySymbol } from '../utils/format';
-import { APP_CURRENCY } from '../constants/currency';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { usePalette } from '../theme/usePalette';
@@ -15,7 +14,7 @@ import { showToast } from '../utils/toast';
 import { MainTabParamList } from '../navigation/types';
 
 type ProfileRoute = RouteProp<MainTabParamList, 'Профиль'>;
-const TOP_UP_AMOUNT_RUB = '1000.00';
+const TOP_UP_AMOUNT = '1000.00';
 
 export default function ProfileScreen() {
   const route = useRoute<ProfileRoute>();
@@ -28,7 +27,7 @@ export default function ProfileScreen() {
   const isDark = useThemeStore((state) => state.isDark);
   const setDark = useThemeStore((state) => state.setDark);
   const palette = usePalette();
-  const currency = APP_CURRENCY;
+  const currency = stats?.currency ?? 'USD';
   const currencySymbol = getCurrencySymbol(currency);
 
   const load = useCallback(async () => {
@@ -45,7 +44,7 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     load();
-  }, [load]);
+  }, [currency, load]);
 
   useFocusEffect(
     useCallback(() => {
@@ -61,16 +60,16 @@ export default function ProfileScreen() {
   const handleTopUp = useCallback(async () => {
     try {
       setTopUpLoading(true);
-      const response = await topUpBalance({ amount: TOP_UP_AMOUNT_RUB, currency: 'RUB' });
-      setStats((prev) => prev ? { ...prev, cashBalance: response.cashBalance, currency: APP_CURRENCY } : prev);
-      showToast(`Счёт пополнен на 1000 ${getCurrencySymbol(APP_CURRENCY)}`);
+      const response = await topUpBalance({ amount: TOP_UP_AMOUNT, currency });
+      setStats((prev) => prev ? { ...prev, cashBalance: response.cashBalance, currency: response.currency || prev.currency } : prev);
+      showToast(`Счёт пополнен на 1000 ${getCurrencySymbol(response.currency || currency)}`);
       await load();
     } catch (error) {
       showToast(getProfileErrorMessage(error), 'long');
     } finally {
       setTopUpLoading(false);
     }
-  }, [load]);
+  }, [currency, load]);
 
   return (
     <Screen refreshing={refreshing} onRefresh={load}>
@@ -99,7 +98,7 @@ export default function ProfileScreen() {
           disabled={topUpLoading}
           onPress={handleTopUp}
         >
-          <Text style={styles.topUpButtonText}>{topUpLoading ? 'Пополнение...' : 'Пополнить счёт (+1000 ₽)'}</Text>
+          <Text style={styles.topUpButtonText}>{topUpLoading ? 'Пополнение...' : `Пополнить счёт (+1000 ${currencySymbol})`}</Text>
         </Pressable>
       </Card>
 

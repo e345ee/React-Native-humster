@@ -15,6 +15,11 @@ export async function getPortfolioStatistics() {
   return data;
 }
 
+export async function getPortfolioCurrency() {
+  const stats = await getPortfolioStatistics();
+  return stats.currency || 'USD';
+}
+
 export async function getStockHolding(symbol: string) {
   try {
     const { data } = await api.get<StockHoldingResponse>(`portfolio/stocks/${symbol}`);
@@ -30,7 +35,7 @@ export async function getStockHolding(symbol: string) {
 export async function buyStock(payload: BuyRequest) {
   const { data } = await api.post<TransactionResponse>('portfolio/stocks/buy', {
     ...payload,
-    currency: payload.currency ?? 'RUB',
+    currency: payload.currency ?? 'USD',
   });
   return data;
 }
@@ -38,7 +43,7 @@ export async function buyStock(payload: BuyRequest) {
 export async function sellStock(payload: SellRequest) {
   const { data } = await api.post<TransactionResponse>('portfolio/stocks/sell', {
     ...payload,
-    currency: payload.currency ?? 'RUB',
+    currency: payload.currency ?? 'USD',
   });
   return data;
 }
@@ -47,7 +52,7 @@ export async function sellStock(payload: SellRequest) {
 export async function topUpBalance(payload: TopUpBalanceRequest) {
   const { data } = await api.post<PortfolioBalanceResponse>('portfolio/balance/top-up', {
     amount: payload.amount,
-    currency: payload.currency ?? 'RUB',
+    currency: payload.currency ?? 'USD',
   });
   return data;
 }

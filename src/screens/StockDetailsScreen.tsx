@@ -18,7 +18,6 @@ import { BackIcon } from '../components/Icons';
 import { getTradeErrorMessage } from '../utils/apiError';
 import { getStockName } from '../constants/stocks';
 import { showToast } from '../utils/toast';
-import { APP_CURRENCY } from '../constants/currency';
 
 type DetailsRoute = RouteProp<RootStackParamList, 'StockDetails'>;
 type ChartType = 'LINE' | 'CANDLE';
@@ -96,7 +95,7 @@ export default function StockDetailsScreen() {
           changeAbs: initialStock.changeAbs,
           changePct: initialStock.changePct,
           collectedAt: quote.collectedAt,
-          currency: APP_CURRENCY,
+          currency: quote.currency || 'USD',
           source: quote.source,
         });
         setBasePriceForChart((prev) => {
@@ -174,7 +173,7 @@ export default function StockDetailsScreen() {
         symbol: stock.symbol,
         quantity: '1',
         pricePerShare: String(currentPrice),
-        currency: APP_CURRENCY,
+        currency: stock.currency ?? holding.lots[0]?.currency ?? 'USD',
       });
       showToast('Покупка успешно выполнена');
       await updateHoldingsOnly();
@@ -207,7 +206,7 @@ export default function StockDetailsScreen() {
         symbol: stock.symbol,
         quantity: '1',
         pricePerShare: String(currentPrice),
-        currency: APP_CURRENCY,
+        currency: stock.currency ?? holding.lots[0]?.currency ?? 'USD',
       });
       showToast('Продажа успешно выполнена');
       await updateHoldingsOnly();
@@ -272,12 +271,12 @@ export default function StockDetailsScreen() {
           <Text style={[styles.sectionTitle, { color: palette.text }]}>Ваш портфель</Text>
           <Text style={[styles.quantity, { color: palette.text }]}>{formatQuantity(quantity)}</Text>
           <Text style={[styles.quoteMeta, { color: palette.secondaryText }]}>Обновление цены каждые 5 секунд</Text>
-          <StatRow label="Текущая цена:" value={formatMoney(currentPrice, APP_CURRENCY)} />
-          <StatRow label="Средняя цена:" value={averagePrice > 0 ? formatMoney(averagePrice, APP_CURRENCY) : '—'} />
-          <StatRow label="Общая стоимость:" value={formatMoney(totalValue, APP_CURRENCY)} />
+          <StatRow label="Текущая цена:" value={formatMoney(currentPrice, stock.currency ?? holding.lots[0]?.currency ?? 'USD')} />
+          <StatRow label="Средняя цена:" value={averagePrice > 0 ? formatMoney(averagePrice, stock.currency ?? holding.lots[0]?.currency ?? 'USD') : '—'} />
+          <StatRow label="Общая стоимость:" value={formatMoney(totalValue, stock.currency ?? holding.lots[0]?.currency ?? 'USD')} />
           <StatRow
             label="Доход:"
-            value={profit >= 0 ? formatSignedMoney(profit, APP_CURRENCY) : formatMoney(profit, APP_CURRENCY)}
+            value={profit >= 0 ? formatSignedMoney(profit, stock.currency ?? holding.lots[0]?.currency ?? 'USD') : formatMoney(profit, stock.currency ?? holding.lots[0]?.currency ?? 'USD')}
             valueColor={profit >= 0 ? palette.success : palette.danger}
           />
         </Card>

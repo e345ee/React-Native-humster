@@ -90,12 +90,13 @@ export function getProfileErrorMessage(error: unknown): string {
 
 export function getTradeErrorMessage(error: unknown): string {
   const status = getApiStatus(error);
-  if (status === 400) return 'Ошибка: Неверный запрос';
-  if (status === 401) return 'Ошибка: Не авторизован';
-  if (status === 403) return 'Ошибка: Нет прав';
-  if (status === 404) return 'Ошибка: Акция не найдена';
-  if (typeof status === 'number') return `Ошибка: ${status}`;
-  return `Ошибка: ${getNetworkErrorMessage(error, 'Неизвестная ошибка')}`;
+  const message = getNetworkErrorMessage(error, 'Неизвестная ошибка');
+  if (status === 400) return `Ошибка 400: ${message}`;
+  if (status === 401) return 'Ошибка 401: Не авторизован';
+  if (status === 403) return 'Ошибка 403: Нет прав';
+  if (status === 404) return 'Ошибка 404: Акция не найдена';
+  if (typeof status === 'number') return `Ошибка ${status}: ${message}`;
+  return `Ошибка: ${message}`;
 }
 
 export function getStatisticsErrorMessage(error: unknown): string {

@@ -3,7 +3,6 @@ import { api } from './client';
 import { MarketQuoteResponse, StockQuote } from '../types/api';
 import { toNumber } from '../utils/format';
 import { getStockName } from '../constants/stocks';
-import { APP_CURRENCY } from '../constants/currency';
 
 const QUOTE_CACHE_KEY = 'stock_exchange_quotes_cache';
 
@@ -40,7 +39,7 @@ export async function getQuotes(symbols: string[]): Promise<StockQuote[]> {
       symbol: quote.symbol,
       name: getStockName(quote.symbol),
       price,
-      currency: APP_CURRENCY,
+      currency: quote.currency || 'USD',
       changeAbs,
       changePct,
       collectedAt: quote.collectedAt,
