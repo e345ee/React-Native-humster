@@ -1,9 +1,25 @@
 import { AxiosError } from 'axios';
 import { ErrorResponse } from '../types/api';
 
-function getApiErrorPayload(error: unknown): ErrorResponse | null {
+function getApiRawData(error: unknown): unknown {
   if (error instanceof AxiosError) {
-    return (error.response?.data as ErrorResponse | undefined) ?? null;
+    return error.response?.data;
+  }
+  return null;
+}
+
+function getApiErrorPayload(error: unknown): ErrorResponse | null {
+  const raw = getApiRawData(error);
+  if (!raw) return null;
+  if (typeof raw === 'string') {
+    try {
+      return JSON.parse(raw) as ErrorResponse;
+    } catch {
+      return null;
+    }
+  }
+  if (typeof raw === 'object' && raw !== null && 'code' in raw && 'message' in raw) {
+    return raw as ErrorResponse;
   }
   return null;
 }
@@ -28,20 +44,39 @@ function getNetworkErrorMessage(error: unknown, fallback = 'Ошибка сет�
 }
 
 export function getAuthErrorMessage(error: unknown): string {
-  const fallback = 'Произошла ошибка сети';
-  const payload = getApiErrorPayload(error);
-  if (!payload) return getNetworkErrorMessage(error, fallback);
+  if (error instanceof AxiosError) {
+    const raw = error.response?.data;
 
-  switch (payload.code) {
-    case 'VALIDATION_ERROR':
-      return payload.message;
-    case 'USER_ALREADY_EXISTS':
-      return 'Пользователь с таким логином уже существует';
-    case 'INVALID_CREDENTIALS':
-      return 'Неверный логин или пароль';
-    default:
-      return payload.message || fallback;
+    if (raw == null) {
+      return error.response ? 'Неизвестная ошибка' : `Ошибка сети: ${error.message}`;
+    }
+
+    const payload = getApiErrorPayload(error);
+    if (payload) {
+      switch (payload.code) {
+        case 'VALIDATION_ERROR':
+          return payload.message;
+        case 'USER_ALREADY_EXISTS':
+          return 'Пользователь с таким логином уже существует';
+        case 'INVALID_CREDENTIALS':
+          return 'Неверный логин или пароль';
+        default:
+          return payload.message;
+      }
+    }
+
+    if (typeof raw === 'string') {
+      return `Ошибка: ${raw}`;
+    }
+
+    return 'Неизвестная ошибка';
   }
+
+  if (error instanceof Error) {
+    return `Ошибка сети: ${error.message}`;
+  }
+
+  return 'Неизвестная ошибка';
 }
 
 export function getProfileErrorMessage(error: unknown): string {

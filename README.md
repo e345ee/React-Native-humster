@@ -73,3 +73,5 @@ npm run prebuild:android
 ```text
 https://song-analysis.app/
 ```
+
+Если backend у тебя локальный, обязательно поменяй `EXPO_PUBLIC_API_URL` в `.env`.

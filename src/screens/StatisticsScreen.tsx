@@ -5,7 +5,7 @@ import Card from '../components/Card';
 import StatRow from '../components/StatRow';
 import { getPortfolioStatistics } from '../api/portfolio';
 import { PortfolioStatisticsResponse } from '../types/api';
-import { formatMoney, formatSignedMoney, toNumber } from '../utils/format';
+import { formatCompactMoney, formatSignedCompactMoney, toNumber } from '../utils/format';
 import { usePalette } from '../theme/usePalette';
 import { getStatisticsErrorMessage } from '../utils/apiError';
 import { showToast } from '../utils/toast';
@@ -40,6 +40,7 @@ export default function StatisticsScreen() {
   const grossSellVolume = toNumber(stats?.grossSellVolume);
   const portfolioValue = cashBalance + grossBuyVolume;
   const netCashFlow = toNumber(stats?.netCashFlow);
+  const grossSellColor = grossSellVolume > grossBuyVolume ? palette.success : palette.danger;
 
   return (
     <Screen refreshing={refreshing} onRefresh={load}>
@@ -55,20 +56,20 @@ export default function StatisticsScreen() {
         <Divider />
         <StatRow
           label="Чистый денежный поток:"
-          value={formatSignedMoney(netCashFlow)}
+          value={formatSignedCompactMoney(netCashFlow)}
           valueColor={netCashFlow >= 0 ? palette.success : palette.danger}
         />
       </Card>
 
       <Card style={styles.card}>
         <Text style={[styles.cardTitle, { color: palette.text }]}>Финансовые показатели</Text>
-        <StatRow label="Денежный баланс:" value={formatMoney(cashBalance)} />
+        <StatRow label="Денежный баланс:" value={formatCompactMoney(cashBalance)} />
         <Divider />
-        <StatRow label="Вложено в акции:" value={formatMoney(grossBuyVolume)} />
+        <StatRow label="Вложено в акции:" value={formatCompactMoney(grossBuyVolume)} />
         <Divider />
-        <StatRow label="Получено от продаж:" value={formatMoney(grossSellVolume)} />
+        <StatRow label="Получено от продаж:" value={formatCompactMoney(grossSellVolume)} valueColor={grossSellColor} />
         <Divider />
-        <StatRow label="Общая стоимость портфеля:" value={formatMoney(portfolioValue)} valueColor={palette.primary} />
+        <StatRow label="Общая стоимость портфеля:" value={formatCompactMoney(portfolioValue)} />
       </Card>
     </Screen>
   );

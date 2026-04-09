@@ -5,7 +5,7 @@ import Screen from '../components/Screen';
 import Card from '../components/Card';
 import { getPortfolioStatistics } from '../api/portfolio';
 import { PortfolioStatisticsResponse } from '../types/api';
-import { formatDisplayDate, formatMoney } from '../utils/format';
+import { formatApiMoney, formatCurrentDate } from '../utils/format';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { usePalette } from '../theme/usePalette';
@@ -22,7 +22,6 @@ export default function ProfileScreen() {
   const loginFromStore = useAuthStore((state) => state.login);
   const login = route.params?.username ?? loginFromStore ?? 'Пользователь';
   const logout = useAuthStore((state) => state.logout);
-  const registeredAt = useAuthStore((state) => state.registeredAt);
   const isDark = useThemeStore((state) => state.isDark);
   const setDark = useThemeStore((state) => state.setDark);
   const palette = usePalette();
@@ -52,7 +51,7 @@ export default function ProfileScreen() {
     <Screen refreshing={refreshing} onRefresh={load}>
       <View style={styles.center}>
         <Card style={[styles.avatarCard, { backgroundColor: palette.surface }]}> 
-          <Text style={styles.avatar}>👤</Text>
+          <Text style={styles.avatar}>🎰</Text>
         </Card>
       </View>
 
@@ -63,11 +62,11 @@ export default function ProfileScreen() {
 
       <Card>
         <Text style={[styles.cardTitle, { color: palette.text }]}>Финансовая информация</Text>
-        <Row label="Баланс:" value={formatMoney(stats?.cashBalance ?? 0)} valueColor={palette.success} />
+        <Row label="Баланс:" value={formatApiMoney(stats?.cashBalance)} valueColor={palette.success} />
         <Divider />
         <Row label="Всего сделок:" value={String(stats?.totalTransactions ?? 0)} />
         <Divider />
-        <Row label="Дата регистрации:" value={formatDisplayDate(registeredAt)} />
+        <Row label="Дата регистрации:" value={formatCurrentDate()} />
       </Card>
 
       <Card>
